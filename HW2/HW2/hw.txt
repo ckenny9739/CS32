@@ -1,0 +1,35 @@
+Connor Kenny
+CS 32
+HW 2
+
+2. 12 Coords for stack
+
+(6,4)
+(6,3)
+(6,5)
+(7,5)
+(8,5)
+(8,6)
+(8,7)
+(8,8)
+(7,8)
+(6,6)
+(5,4)
+(4,4)
+
+4. 12 Coords for queue
+
+(6,4)
+(5,4)
+(6,5)
+(6,3)
+(4,4)
+(6,6)
+(7,5)
+(3,4)
+(4,5)
+(8,5)
+(2,4)
+(4,6)
+
+The algorithms differ because the stack implementation follows each path until it reaches the end of the path and then goes back and searches another path. Queue starts at the beginning and slowly builds out point by point. It switches where it searches each time. It pops the oldest element enqueued instead of the most recent one (what stack does), which dramatically changes the order of the search.

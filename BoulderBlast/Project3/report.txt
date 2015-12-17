@@ -1,0 +1,273 @@
+Connor Kenny
+CS 32 Project 3 Report
+
+1. A high-level description of each of your public member functions in each of your classes, and why you chose to define each member function in its host
+class; also explain why (or why not) you decided to make each function
+virtual or pure virtual. 
+
+Constructors + Destructors - explained:
+
+-Every Destructor is virtual from the Actor class, so I did not need implement them individually.
+-Every Constructor for the derived classes of Actor create their specific base class and assign the correct values to their members. They are not virtual because you cannot have virtual constructors. Every class has a constructor and this is the explanation for each and every one of them.
+
+
+// Actor - Base class for all actors
+
+    virtual ~Actor() {}; 
+	Needs virtual destructor as a Base class. No need for body because Actor has no dynamically allocated members.
+
+    Actor(int imageID, int x, int y, StudentWorld* sw, Direction dir = none, bool walk = false);
+	Constructor - necessary to make any objects of Actor’s derived classes.
+    
+    virtual bool doSomething() = 0;
+	Serves as an act method for each of my objects. It is pure virtual because every actor that will be instantiated acts differently. An Actor on its own, cannot act. I made it “bool” because it made it easier to use base classes doSomething functions later on (ex. checking to see if ActorWithHealth has died).
+    
+None of the following functions for Actor are virtual because derived classes do not have a reason to implement these differently.
+
+    StudentWorld* getWorld() const;
+	Returns the world to which that the actor belongs. Allows actors to access StudentWorld functions.
+
+    bool getWalkable() const;
+	Returns whether or not the actor is able to be walked through. This helps with collisions and movement of other actors.
+
+    bool getAlive() const;
+	Returns whether or not the actor is alive. This makes accessing the m_alive member possible, which is needed for every doSomething function.
+
+    int getImageID() const;
+	Returns the imageID of each actor. This is defined because it allows the programmer to tell actors apart from each other without having to dynamic cast the pointers to the actors.
+
+    void setDead();
+	This sets the actor to dead. This allows actors to die, which is important for implementing the graphics of the game.
+    
+
+// Pickupable - Accounts for Jewel, RestoreHealthGoodie, ExtraLifeGoodie, and AmmoGoodie	
+    
+    virtual bool doSomething();
+	This is defined in Pickupable because it accounts for all the goodies and the jewel objects. It is able to be instantiated so it is no longer an Abstract Base Class. It checks to see if the player stepped onto the same square as the item. If he did, it adds points and makes sounds accordingly.
+
+
+// ActorWithHealth - Accounts for Player, Boulder and assorted Bots
+    
+These functions are not virtual because all Actor(s)WithHealth have the same implementation for getting, setting and decrementing their health.
+
+    int getHealth() const;
+	Returns the m_health member. This allows Actor(s)WithHealth to know when they have died.
+
+    void decHealth();
+	Decrements the health by 2. This is called when an ActorWithHealth is shot by a bullet.
+
+    void setHealth(int health);
+	Sets the m_health member to health. This is used in the Player’s restoreHealth member function.
+    
+The following functions are virtual because each ActorWithHealth implements them in a slightly different way, but each have their similarities. These functions are defined here with only the common behavior of all Actor(s)WithHealth.
+
+    virtual bool objInWay(int dx, int dy, int& i) const;
+	This function checks whether or not an object is in the way of the moving ActorWithHealth. All of the Actor(s)WithHealth can move so they all need the ability to check whether or not they can move into the next space.
+	
+    virtual bool getAttacked();
+	This function assesses the damage caused by being attacked by a bullet. Each ActorWithHealth deals with this phenomenon differently so it needs to be virtual. It is defined here with only the common functionalities of all the Actor(s)WithHealth.
+	
+    virtual bool shoot();
+	This function allows the Actor(s)WithHealth to shoot. This function is virtual because, although not every ActorWithHealth needs to shoot, the ones that do all shoot slightly differently so the base implementation is here (the rest is in the individual derived class). 
+	
+
+// Player
+    
+The following functions are virtual because they are implementations of virtual functions from the base class. They are all more specific versions of the versions described in the base class.
+
+    virtual bool doSomething();
+	This function allows the player to be controlled by the keys (shoot, escape, move, etc).
+
+    virtual bool objInWay(int dx, int dy, int& i);
+	This function does the same thing as the ActorWithHealth version except that it accounts for bumping into boulders which will then be pushed depending on whether or not there is an object in its way.
+
+    virtual bool getAttacked();
+	This function does the same thing as the ActorWithHealth version except it adds the sounds specific to the player.
+
+    virtual bool shoot();
+	This function does the same thing as the ActorWithHealth version except it adds the sounds specific to the player. It also decreases the m_ammo member.
+    
+The following functions are not virtual because only the Player can perform these functions.
+
+    void restoreHealth();
+	This resets the Player’s health to 20. This is used when the Player steps on a RestoreHealthGoodie.
+
+    int getAmmo() const;
+	This returns the ammo count that the Player has. It is used to determine whether or not the Player has enough ammo to shoot.
+
+    void increaseAmmo();
+	This function increases ammo by 20 because it is used when the Player steps on an AmmoGoodie.
+
+
+// Boulder
+
+    virtual bool doSomething() {return Actor::getAlive();}
+    	This function does nothing (returns whether or not it is alive - has to return a value because it is bool), because, well, what else would a boulder do.
+    void push(int dx, int dy);
+	This is not virtual because only a Boulder can be pushed. It checks for objects in the direction it is trying to be pushed. If there is a hole in the adjacent spot (or it is empty), it moves the player to the boulder’s initial spot and then moves the boulder to the next space.
+
+
+// Bot - Accounts for SnarlBots and KleptoBots
+
+These functions are virtual because they are more specific versions of the ActorWithHealth functions and they will be implemented differently in the different types of bots.
+
+    virtual bool doSomething();
+	This function sets the m_ticks member to the correct value according to the formula.
+
+    virtual bool getAttacked();
+	This function does everything the ActorWithHealth function does, and it adds the Robot-getting-shot sounds.
+
+    virtual bool shoot();
+	This function checks whether or not the Bot has a clear sight on the player. If it does then it shoots. It is virtual because specific Bots do it slightly differently.
+    
+This function is not virtual because every bot would do this the same.
+
+    void resetTicks();
+    	This function resets the tick number because I call the Bot::doSomething() function multiple times in the AngryKleptoBot::doSomething function. This allows me to keep the correct number of ticks.
+
+// SnarlBot
+
+These functions are virtual because they are more specific versions of the Bot functions and they will be implemented differently in the different types of SnarlBots.
+   
+    virtual bool doSomething();
+	This function does the same thing as the Bot::doSomething(), but also tries to shoot, and moves the Snarlbot if possible.
+
+    virtual bool objInWay(int dx, int dy, int& i);
+	This function does the same thing as the ActorWithHealth::objInWay(). If it is true (there is an obj in the way), it reverses the direction of the SnarlBot.
+
+    virtual bool getAttacked();
+	This does the same as the Bot::getAttacked, and increases the score by 100. 
+
+
+// KleptoBot
+
+These functions are virtual because they are more specific versions of the Bot functions and they will be implemented differently in AngryKleptoBots.
+
+    virtual bool doSomething();
+	This function does the same thing as a Bot, while also checking to see if it will pick up a Goodie (if it is on the same square). It also moves the KleptoBot in a random direction if it is obstructed or has moved distanceBeforeTurning. 
+
+    virtual bool getAttacked();
+	This function does the same thing as a Bot, but increases score by 20 for AngryKleptoBots and 10 for KleptoBots. It also “drops” the Goodie that it picked up (if it did pick one up).
+    
+These functions are not virtual because all KleptoBots do these the same. There is no reason to reimplement them in a derived class.
+
+    bool move();
+	This function moves the KleptoBot in the correct direction if there is nothing in the way. 
+	
+    void pickDirection(int d);
+	This function simply defines the four directions. It intakes an integer and sets the KleptoBots direction to the direction related to the integer. This is used in the KleptoBot::doSomething function to move correctly.
+
+
+// AngryKleptoBot
+    
+    virtual bool doSomething();
+	This function does the same thing as a KleptoBot except it also will try to shoot before moving or picking up a Goodie. (It utilizes the resetTicks function to account for implicitly calling Bot::doSomething twice.
+
+
+// Other - Account for other objects that derive only from Actor
+
+
+// Wall
+    
+    virtual bool doSomething() {return true;}
+	This does nothing because what else would a wall do??
+
+
+// Hole
+    
+    virtual bool doSomething();
+	This function checks to see if a Boulder occupies the same place as the Hole. If it does, then it sets both objects to dead.
+
+
+// Bullet
+
+    virtual bool doSomething();
+	This function checks whether or not the bullet has collided with an object, then moves the bullet in the correct direction. After that, it checks to see if it has collided again (using the checkCollide() function).
+    
+    bool checkCollide();
+	This function is not virtual because only a bullet needs to check if it has collided with something. This makes it easier and more concise than having each Actor check itself. If the bullets collides with an ActorWithHealth, it calls the getAttacked() function. If it hits a Factory, it checks to see if there is a KleptoBot in the same space to attack. Finally, if it hits a wall, it just sets itself to dead.
+
+
+// Exit
+    
+    virtual bool doSomething();
+	This function checks to see whether or not the Exit is revealed (and stepped on by the Player once revealed). If the Player collects all the jewels, it is revealed and plays a sound. If the Player steps on the revealed Exit, the level is completed and the Player gains the appropriate number of points.
+
+
+// KleptoBotFactory
+    
+    virtual bool doSomething();
+	This function checks to see if there is a KleptoBot on the same spot as the factory, while also counting the number of KleptoBots in the specific range. If there is not a KleptoBot on the Factory and the count is less than 3, it produces the correct type of KleptoBot.
+
+
+
+2. A list of all functionality that you failed to finish as well as known bugs in your classes:
+
+To my knowledge, I finished every functionality in the spec. A couple of bugs that I have found, however, are that when I shoot a bullet with a wall/boulder 2 spaces away, the bullet is never generated by the graphics functions. The other bug is that Boulders don’t always move over holes before deleting them. (Both of these bugs have been cleared by Professor Smallberg as OK)
+
+
+
+3. A list of other design decisions and assumptions you made:
+
+I decided to make a class for Actor(s)WithHealth instead of giving every Actor health. Either would have worked, but I decided to do this so that decrementing and assigning health would make sense. (How much health does a wall have? Infinite?).
+
+Another design decision I made was to only have one class for all of the Pickupable objects (the 3 Goodies + Jewel). I did this because all 4 of these do the same thing basically, except that they increase the score different amounts or add health/ammo to the Player. What I did was supply the ImageID as a parameter for the Pickupable constructor, this would create the specific Pickupable.
+
+I also made a Bot class as a Base class for SnarlBots and KleptoBots (it is derived from ActorWithHealth). This made sense because all Bots have similar behavior.
+
+Along with the Bot class, I only made one SnarlBot class that works for the both Horizontal and Vertical variety by changing the direction.
+
+I also made KleptoBot the base class for AngryKleptoBot instead of having a Base class they both derived from because I saw AngryKleptoBot as a more specific version of KleptoBot, not as a totally separate KleptoBot. AngryKleptoBot can do everything that a KleptoBot can do and more, so this implementation made the most sense to me.
+
+Another decision I made was to allow the Exit to handle increasing score and playing the sound instead of the StudentWorld::move() function. I did this because I preferred having the Actors handle as much as possible.
+
+Finally, I made KleptoBots destroy the Goodie they stole and reallocate a new one when they die. I did this because I was having trouble just making them invisible. I could still pick up the Goodie even though it was invisible and when it was put in its new position, you could see it move across the screen. This solution was simple and quick, so I implemented it this way.
+
+
+4. A description of how you tested each of your classes (1-2 paragraphs per
+class).
+
+StudentWorld:
+	I tested my StudentWorld class implicitly by testing all of my other classes, but at the beginning of my progress I did do specific tests. First I made sure that it would display everything correctly, and that the movements were correct for the Player and the other Actors. I did this by looking at the screen and comparing what I saw to what I saw in the sample executable. 
+
+Actor:
+	Actor is the base class for all of my other classes so it was kind of difficult to test directly. By seeing that all of my other classes worked, it must mean that my Actor class did as well. I also tested each of the individual functions defined in Actor by having my Actors call them when the situation called for them.
+
+Pickupable:
+	I tested this class by placing every different type of Goodie and Jewels on a blank map. I would step on each with my Player and watch the score/health/ammo/lives rise accordingly. I also made sure Boulders could not go through them as well as having Bots and Bullets have the ability to go through.
+
+ActorWithHealth:
+	This class is a base class for my classes with health so it is tested by testing those, but I also tested the functions that are defined in this class specifically to make sure they worked. All of my other classes worked correctly, so that means that this base class must work too.
+
+Player:
+	I tested the Player class by playing the game. I checked moving in all directions with and without obstacles. I checked pushing a boulder around the map without going through walls, shooting a bullet in the correct direction and even getting shot by Bots until I died. I also made the player collect Goodies to see that the effects worked correctly.
+
+Boulder:
+	I tested this class by having my Player push Boulder objects around in an empty map with holes. I made sure that my boulder would go into the space that the hole occupies. I also made sure that Boulders couldn’t go into the same square as the Exit or Pickupables, because that would go against the spec. Basically, I played the game and put Boulders in every possible situation I could think of to see how they acted.
+
+Bot:
+	This class is the base class for all of my Bots. It is tested by making sure that my derived Bot classes work correctly. I did this by watching the game tick by tick to track their movements and decisions. By testing the derived classes, I made sure the Bot functions worked correctly as well.
+
+SnarlBot:
+	I tested this class by putting both Vertical and Horizontal SnarlBots on a map with obstructions. This allowed me to make sure that they moved correctly (especially when running into an object - aka turning around). I also made sure they would shoot at the Player when it was in their line of sight. Also, I specifically made sure that they could shoot over holes. Finally, I checked that when destroyed by the Player’s bullets, the correct sounds were played and I got the correct number of points.
+
+KleptoBot:
+	KleptoBot was by far the most annoying to test precisely. Its movements are random and sporadic, which create a very difficult testing environment. I solved this by watching them move tick by tick and counting how long it took them to move/how far they moved. It is tough to know for sure whether or not the random numbers provide the percentage asked for in the spec perfectly, but I am pretty sure they do. I also made sure that they picked up and set down the Goodies correctly, which took a long time because I had to try multiple implementations.
+
+AngryKleptoBot:
+	This class had the same difficulties for testing as KleptoBot with the added fun of being able to shoot. I put a Factory enclosed in holes and made sure that the AngryKleptoBots could shoot me over the holes, but not when I was behind a wall or other obstacle. I also checked their movements and directions just the same as KleptoBot. Finally, I had to make sure their ticks were correct, which was initially a problem for me. I solved it by resetting their tick count halfway through the doSomething function (because I end up calling Bot::doSomething twice which goes through the tick algorithm).
+
+Wall:
+	I tested walls by making sure that no objects could pass through them. This occurred while testing all my other classes. I also specifically made sure that the Player, Boulders and Bullets could not pass through walls for part 1 of this project. Besides that, Walls don’t do much.
+
+Hole:
+	To test the Hole class, I made sure that they would swallow Boulders correctly. This happened by setting up a map with only walls, holes and boulders. I pushed boulders into holes over and over in all different directions to make sure they worked correctly. I still don’t know why the graphics don’t work perfectly, but maybe somebody else will figure it out.
+
+Bullet:
+	I tested Bullet by having both my Player and my Bots shoot them. I made sure they did the correct damage to Actor(s)WithHealth, while being destroyed by Walls and Factories, and passing through everything else. I made sure these conditions held by shooting bullets over and through and into different objects while counting how many times they hit. This allowed me to make sure that the health was decreased properly. I also made sure that they moved once every tick by going frame by frame.
+
+Exit:
+	I tested the Exit class by collecting all the Jewels, and seeing the Exit become visible (because at first it is invisible). Then I would step on it with my Player to make sure that I moved on to the next level, while also having my score be increased by the correct amount. One subtle test I made was to see if you could push Boulders onto the Exit, even when it was invisible. It says that you cannot do this in the spec, but I did not notice that until very late in my progress. The Exit is also tested every time I played the game for fun (I would beat the level and move on).
+
+KleptoBotFactory:
+	I tested this class by making my own maps. First I made sure that you couldn’t have multiple KleptoBots on the factory at the same time. Then I made a ring of holes which enclosed the space that Factories check for KleptoBots. I left the game running for a very long time to make sure that no more than 3 KleptoBots were produced (because there were 3 stuck in the range). Finally, I made sure that Factories produced the correct type of KleptoBot by allowing the AngryKleptoBots to shoot me (only AngryKleptoBots can shoot).

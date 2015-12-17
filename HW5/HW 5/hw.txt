@@ -1,0 +1,105 @@
+1a.
+Using the simplest binary search tree (BST) insertion algorithm (no balancing), show the tree that results after inserting into the above tree the nodes 80, 65, 75, 45, 35 and 25 in that order.
+
+50
+  20
+    10
+    40
+      30
+        25
+        35
+      45
+  60
+    xx
+    70
+      65
+      80
+        75
+        xx
+
+1b.
+After inserting the nodes mentioned in part a, what is the resulting BST after you delete the node 30, then the node 20? (Again, just use a simple deletion algorithm with no balancing. If you have an option of making a choice, any correct choice is acceptable.)
+
+50
+  25
+    10
+    40
+      35
+      45
+  60
+    xx
+    70
+      65
+      80
+        75
+        xx
+
+1c.
+After inserting the nodes mentioned in part a, what would be printed out by in-order, pre-order, and post-order traversals of the tree (assume your traversal function prints out the number at each node as it is visited)?
+
+Pre-order: 50 20 10 40 30 25 35 45 60 70 65 80 75
+
+
+In-order: 10 20 25 30 35 40 45 50 60 65 70 75 80
+
+
+Post-order: 10 25 35 30 45 40 20 65 75 80 70 60 50
+
+
+
+2a. 
+Show the resulting heap (As in problem 1a, show the tree in some recognizable form.)
+
+6
+ 3
+  1
+  2
+ 5
+  4
+  x
+
+
+2b.
+Show how your heap from part a would be represented in an array.
+
+Array (index 0 through 5): 6 3 5 1 2 4
+
+2c.
+Remove the top item from the heap and show the resulting array after the removal operation.
+
+Array (index 0 through 4): 5 3 4 1 2
+
+3a.
+Show a C++ structure/class definition for a binary tree node that has both child node pointers and a parent node pointer. Assume the data stored in each node is an int.
+
+struct BinaryTreeNode
+{
+    BinaryTreeNode* m_parent;
+    BinaryTreeNode* m_left;
+    BinaryTreeNode* m_right;
+    int m_data;
+};
+
+3b.
+Write pseudocode to insert a new node into a binary search tree with parent pointers. (Hint: You can find binary search tree insertion code on pp. 471-473).
+
+void insert(int data)
+{
+   BinaryTreeNode* cur = rootOfTree;
+   BinaryTreeNode* prev = nullptr;
+   while cur is not null pointer
+   {
+	set prev equal to cur
+	if data is less than cur’s m_data
+		set cur to cur’s m_left
+	else
+		set cur to cur’s m_right
+   }
+   set cur equal to new node with m_data of data
+   set m_parent to prev
+   set m_left and m_right to nullptr
+   if cur’s m_data is greater than m_parent’s m_data
+	set m_parent’s m_right to cur
+   else
+	set m_parent’s m_left to cur
+}

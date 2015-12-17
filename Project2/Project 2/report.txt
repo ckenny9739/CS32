@@ -1,0 +1,160 @@
+Connor Kenny
+CS 32 - Project 2
+report.txt
+
+Design: My doubly linked list is circular with a dummy node. My nodes contain a value, count of the number of times value was added, and 2 pointers: to the nodes before and after it in the list. My nodes are added following the dummy node so they would be in order from newest to oldest moving forward from the dummy node (unless some are deleted). An empty Multiset has a head pointer to a dummy node with the dummy node’s pointers pointing to itself. A regular Mulitiset has a head pointer, dummy node (to which the head pointer points) and other nodes(with values and sizes) connected via m_next and m_prev pointers.
+
+
+Pseudocode:
+	erase (eraseAll uses similar logic):
+			loop through each node
+				if m_data equals value
+					decrease m_size by 1
+					if m_size equals 0
+						move pointers and delete p (no longer in Multiset
+						decrease m_count by 1
+					return 1
+			return 0 (couldn’t erase any)
+
+	subtract: 	Set result to ms1 (eliminate results old value)
+			loop through each node in ms2
+				get the m_data member
+				find number of repetitions in ms2 and result
+				if count1 > count2
+					erase count2 of specific element in result
+				else
+					eraseAll of specific element in result
+
+	insert:		loop through each node
+				if m_data equals value
+					increment m_size and return true
+			(need to add a new node)
+			dynamically allocate new node
+			m_data = value, m_size = 1, m_count++
+			move pointers so that it is in-between m_head and next node (can be m_head)
+			return true
+			
+
+Test Cases:
+void testCases()
+{
+    // default constructor
+    Multiset ms;
+    ItemType t;		            // Itemtype defined as std::string
+    
+    // For an empty multiset:
+    assert(ms.size() == 0);         // test size when empty
+    assert(ms.empty());             // test empty
+    assert(ms.erase("cumin") == 0); // nothing to erase
+    assert(ms.get(0, t) == 0);      // nothing to get
+    
+    // For one item in multiset
+    assert(ms.insert("cumin"));     // test insert
+    assert(ms.size() == 1);         // test size
+    assert(ms.uniqueSize() == 1);   // test uniqueSize
+    assert(ms.get(0, t) == 1);      // test get
+    assert(ms.count("cumin") == 1); // test count
+    assert(ms.contains("cumin") == 1); // test contains
+    
+    // For one unique item, but repeated
+    assert(ms.insert("cumin"));     // insert multiple
+    assert(ms.size() == 2);         // test size with repeats
+    assert(ms.uniqueSize() == 1);   // test uniqueSize with repeats
+    assert(ms.get(0, t) == 2);      // test get
+    assert(ms.count("cumin") == 2); // test count
+    assert(ms.insert("cumin"));
+    assert(ms.insert("cumin"));
+    assert(ms.erase("cumin") == 1); 	// test erase
+    assert(ms.eraseAll("cumin") == 3);  // test eraseAll
+    assert(ms.eraseAll("cumin") == 0);  // nothing to erase
+    assert(ms.size() == 0);        	// check to see eraseAll worked
+    
+    // For multiple unique items
+    assert(ms.insert("salt"));
+    assert(ms.insert("pepper"));    // insert multiple unique items
+    assert(ms.insert("salt"));
+    assert(ms.insert("salt"));
+    assert(ms.insert("cumin"));
+    assert(ms.size() == 5);         // test size
+    assert(ms.uniqueSize() == 3);   // test uniqueSize
+    assert(ms.count("salt") == 3);  // test count
+    cout << "ms.get() test" << endl;
+    for (int i = 0; i < ms.uniqueSize(); i++)   // test get with multiple items
+        cout << ms.get(i, t) << " - " << t << endl;
+    
+    // test copy constructor
+    Multiset ms1(ms);
+    assert(&ms1 != &ms);                // Check to see if new Multiset
+    assert(ms1.size() == 5);            // test size
+    assert(ms1.uniqueSize() == 3);      // test uniqueSize
+    assert(ms1.count("salt") == 3);     // test count
+    cout << "ms1.get() test" << endl;
+    for (int i = 0; i < ms1.uniqueSize(); i++)   // test get with multiple items
+        cout << ms1.get(i, t) << " - " << t << endl;
+
+    // test assignment operator
+    Multiset ms2 = ms;
+    assert(&ms2 != &ms);                // Check to see if new Multiset
+    assert(ms2.size() == 5);            // test size
+    assert(ms2.uniqueSize() == 3);      // test uniqueSize
+    assert(ms2.count("salt") == 3);     // test count
+    cout << "ms2.get() test" << endl;
+    for (int i = 0; i < ms2.uniqueSize(); i++)   // test get with multiple items
+        cout << ms2.get(i, t) << " - " << t << endl;
+    
+    Multiset ms3;
+    assert(ms3.insert("spice"));
+    assert(ms3.insert("spice"));    // insert multiple unique items
+    assert(ms3.insert("flavor"));
+    assert(ms3.insert("yummy"));
+    assert(ms3.insert("cumin"));
+    assert(ms3.insert("cumin"));
+    assert(ms3.insert("cumin"));
+    assert(ms3.insert("salt"));
+    
+    // test swap
+    ms3.swap(ms);
+    assert(ms.size() == 8);             // test size
+    assert(ms.uniqueSize() == 5);       // test uniqueSize
+    assert(ms.count("spice") == 2);     // test count
+    cout << "swap ms test" << endl;
+    for (int i = 0; i < ms.uniqueSize(); i++)   // test get to print Multiset
+        cout << ms.get(i, t) << " - " << t << endl;
+    
+    assert(ms3.size() == 5);            // test size
+    assert(ms3.uniqueSize() == 3);      // test uniqueSize
+    assert(ms3.count("salt") == 3);     // test count
+    cout << "swap ms3 test" << endl;
+    for (int i = 0; i < ms3.uniqueSize(); i++)   // test get to print Multiset
+        cout << ms3.get(i, t) << " - " << t << endl;
+    
+    // test combine
+    Multiset result1;
+    combine(ms, ms3, result1);
+    cout << "combine test" << endl;
+    for (int i = 0; i < result1.uniqueSize(); i++)   // test get to print Multiset
+        cout << result1.get(i, t) << " - " << t << endl;
+    
+    // test combine with aliasing
+    combine(result1, ms, result1);
+    cout << "combine test with aliasing" << endl;
+    for (int i = 0; i < result1.uniqueSize(); i++)   // test get to print Multiset
+        cout << result1.get(i, t) << " - " << t << endl;
+    
+    // test subtract
+    Multiset result2;
+    subtract(ms, ms3, result2);
+    cout << "subtract test" << endl;
+    for (int i = 0; i < result2.uniqueSize(); i++)   // test get to print Multiset
+        cout << result2.get(i, t) << " - " << t << endl;
+    
+    // test subtract with aliasing
+    Multiset ms4;
+    assert(ms4.insert("spice"));
+    subtract(result2, ms4, result2);
+    cout << "subtract test with aliasing" << endl;
+    for (int i = 0; i < result2.uniqueSize(); i++)   // test get to print Multiset
+        cout << result2.get(i, t) << " - " << t << endl;
+
+    cout << "Passed test cases" << endl;
+}

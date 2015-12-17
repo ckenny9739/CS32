@@ -1,0 +1,17 @@
+Connor Kenny
+HW4
+
+2. The call to insert on the URL Multiset causes a compiler error because URL and const URL are totally different types according to the compiler. It will not make the conversion for you. You would have to define your own != operator that allows for the conversion. Currently, it is unable to compare const Multiset and Multiset.
+
+3b. It wouldn’t work because it can’t take path as a parameter. It wouldn’t be able to keep track of the current path like the 2 parameter version can. It would only print the current part, not the entire path it took to get there.
+
+4a. It is O(N^3) because of the 3 nested for loops that each run N times. Everything else is in constant time.
+
+4b. It is O(N^3) as well. It has a much lower constant of proportionality, but it still has 3 nested for loops. The one for loop that runs while j < i does not change the complexity for our purposes. The sum from 0 to N-1 is on the order of N^2, then multiplied by another for loop (O(N)), we get O(N^3).
+
+5a. (If p = m_head->m_next in the for loop of get counts as an Itemtype object visited, even though it is a node, the complexity would be O(N^4).) Otherwise, the time complexity for this algorithm is  O(N^3) because the for loop visits N items, and so do the contains and insert functions. The get and swap functions are constant time with respect to visiting Itemtype objects.
+
+
+5b. This time complexity is O(NlogN) because it adds functions with linear time to the sorting algorithm with complexity of NlogN (which overpowers the linear time algorithms). The first two loops are each O(N), the sort is O(NlogN), the next for loop is O(N). Overall, when these times are added, the result is O(NlogN).
+
+

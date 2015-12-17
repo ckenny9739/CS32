@@ -1,0 +1,139 @@
+Connor Kenny
+CS 32
+Project 4
+report
+
+1. Whether any of your classes have bugs or other problems that we should know
+about.
+
+My classes do not have any bugs or problems as far as I know.
+
+
+2. Whether or not each satisfies our big-O requirements, and if not, what you did
+instead and what the big-O is for your version.
+
+All of my classes satisfy the big-O requirements as far as I know.
+
+
+3. How three of your methods work – use high-level pseudocode to describe these:
+• HashTable’s set() method
+• HashTable’s touch() method
+• HashTable’s discard() method
+
+set:
+template <typename KeyType,	typename ValueType>
+bool HashTable<KeyType, ValueType>::set(const KeyType& key, const ValueType& value, bool permanent)
+{
+    Create a ValueType object named dummyValue;
+    set int bucketNum to getBucket(key);
+    set Node* search to m_hashTable[bucketNum];
+    if (get(key, dummyValue) returns false)
+    {
+        if (isFull())		 // HashTable is full
+            return false;
+        else
+        {
+	    set Node* itemToBeAdded to new Node;
+            set itemToBeAdded’s m_next to nullptr;
+            set itemToBeAdded’s m_prev to nullptr;
+            set itemToBeAdded’s m_key to key;
+            set itemToBeAdded’s m_value to value;
+            set itemToBeAdded’s m_isPermanent to permanent;
+
+	    set m_hashTable[bucketNum] to itemToBeAdded;
+            set m_hashTable[bucketNum]’s m_next to search;
+
+            if (search does not equal nullptr)                      
+                set search’s m_prev to itemToBeAdded;
+            
+            increment m_numAssociations by 1;
+        }
+    }
+    else
+    {
+        while (search’s m_key does not equal key)
+        {
+            set search to search’s m_next;
+        }
+        set search’s m_value to value;
+    }
+    call touch(key);		// this puts it in recentlyTouched list
+    return true;
+}
+
+
+
+touch:
+template <typename KeyType,	typename ValueType>
+bool HashTable<KeyType, ValueType>::touch(const KeyType& key)
+{
+    set Node* item to m_hashTable[getBucket(key)];
+    if (item is permanent)
+	return false;
+    while (item does not equal nullptr)
+    {
+        if (item’s m_key equals key)
+            break out of loop;
+        set item to item’s m_next;
+    }
+    
+    if (item equals nullptr)
+        return false;
+    
+    if (m_lastTouched equals item)
+	set m_lastTouched to m_lastTouched’s m_nextTouched;
+
+    if (item’s m_prevTouched is not nullptr)
+        set item’s m_prevTouched’s m_nextTouched to item’s m_nextTouched;
+    if (item’s m_nextTouched is not nullptr)
+        set item’s m_nextTouched’s m_prevTouched to item’s m_prevTouched;
+        
+    set item’s m_nextTouched to nullptr;
+    set item’s m_prevTouched to m_recentlyTouched;
+
+    if (m_lastTouched equals nullptr)
+	set m_lastTouched to item;
+        
+    if (m_recentlyTouched is not nullptr)
+        set m_recentlyTouched’s m_nextTouched to item;
+    set m_recentlyTouched to item;
+        
+    return true;
+}
+
+
+discard:
+template <typename KeyType,	typename ValueType>
+bool HashTable<KeyType, ValueType>::discard(KeyType& key, ValueType& value)
+{
+    if (m_numAssociations equals 0 or m_recentlyTouched equals nullptr)
+        return false;
+    set Node* search to m_lastTouched;
+    
+    set key to search’s m_key;
+    set value to search’s m_value;
+        
+    if (search’s m_nextTouched is not nullptr)
+        set search’s m_nextTouched’s m_prevTouched to nullptr;
+    if (search’s m_next is not nullptr)
+        set search’s m_next’s m_prev to search’s m_prev;
+    if (search’s m_prev is not nullptr)
+        set search’s m_prev’s m_next to search’s m_next;
+
+    assign a bool variable deletedLastNode to false;
+    if (search equals m_recentlyTouched)    
+        set deletedLastNode to true;
+    
+    decrement m_numAssociations by 1;
+
+    if (m_lastTouched does not equal nullptr)
+	set m_lastTouched to m_lastTouched’s m_nextTouch;
+    
+    delete search;
+    set corresponding location in m_hashTable to nullptr;
+    
+    if (deletedLastNode is true)
+        set m_recentlyTouched to nullptr;
+    
+    return true;
+}
